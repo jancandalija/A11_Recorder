@@ -111,12 +111,12 @@ class MainActivity : AppCompatActivity() {
                 if (permissionToRecord && permissionToStore) {
 
                     // Message
-                    Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, "Permission Granted", Toast.LENGTH_LONG).show()
 
                 } else {
 
                     // Message
-                    Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_LONG).show()
                 }
             }
         }

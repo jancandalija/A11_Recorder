@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">Recorder</string>
 
-    // Buttons
-    <string name="registratoreStart">START</string>
-    <string name="registratoreStop">PAUSE</string>
-    <string name="registratorePlay">PLAY</string>
-    <string name="registratoreStopPlay">STOP</string>
-    <string name="registratoreStatus">Recording status</string>
+    // Button's string
+    <string name="start">Start</string>
+    <string name="stop">Pause</string>
+    <string name="play">Play</string>
+    <string name="stopPlay">Stop</string>
+    <string name="status">Recording status</string>
 </resources>
