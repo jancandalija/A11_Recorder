@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Recorder</string>
-
-    // Button's string
-    <string name="start">Start</string>
-    <string name="stop">Pause</string>
+    <string name="start">Record</string>
+    <string name="stop">Save</string>
     <string name="play">Play</string>
     <string name="stopPlay">Stop</string>
     <string name="status">Recording status</string>
+    <string name="playRecording">Play recording</string>
 </resources>
