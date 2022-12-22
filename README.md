@@ -3,5 +3,5 @@
 
 ## Screen preview
 <p float="left">
-<img height="500em" src="RecorderScreen.png" title="Recorder's screen preview">
+<img height="500em" src="Recorder.png" title="Recorder's screen preview">
 </p>
