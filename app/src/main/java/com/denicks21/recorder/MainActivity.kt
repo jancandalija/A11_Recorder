@@ -177,14 +177,14 @@ class MainActivity : AppCompatActivity() {
             // Release the class mRecorder
             mRecorder!!.release()
             mRecorder = null
-            statusTV.text = "Interrupted recording"
+            statusTV.text = "Recording interrupted"
         }
     }
 
     fun pausePlaying() {
 
         // Stop playing the audio file
-        statusTV.text = "Listening to interrupted recording"
+        statusTV.text = "Recording stopped"
     }
 
     companion object {
