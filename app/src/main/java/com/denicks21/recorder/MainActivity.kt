@@ -2,53 +2,62 @@ package com.denicks21.recorder
 
 import android.Manifest.permission
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.denicks21.recorder.databinding.ActivityMainBinding
 import java.io.File
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
-    lateinit var startTV: TextView
-    lateinit var stopTV: TextView
-    lateinit var playTV: TextView
-    lateinit var stopplayTV: TextView
-    lateinit var statusTV: TextView
+
+    lateinit var binding: ActivityMainBinding
     private var mRecorder: MediaRecorder? = null
     private var mPlayer: MediaPlayer? = null
     var mFileName: File? = null
+    private var posicioAudio = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        statusTV = findViewById(R.id.idTVstatus)
-        startTV = findViewById(R.id.btnRecord)
-        stopTV = findViewById(R.id.btnStop)
-        playTV = findViewById(R.id.btnPlay)
-        stopplayTV = findViewById(R.id.btnStopPlay)
 
-        startTV.setOnClickListener {
+        val fil = Thread {runOnUiThread({
+            if (mPlayer != null) {
+                posicioAudio = mPlayer!!.currentPosition
+                if (posicioAudio >= mPlayer!!.duration) {
+                    binding.idTVstatusFile.setTextColor(Color.CYAN)
+                    binding.idTVstatusFile.text = "Ended..."
+                }
+            }
+
+        })}
+
+        fil.start()
+
+        binding.btnRecord.setOnClickListener {
             startRecording()
         }
 
-        stopTV.setOnClickListener {
-            pauseRecording()
+        binding.btnStop.setOnClickListener {
+            endRecording()
         }
 
-        playTV.setOnClickListener {
+        binding.btnPlay.setOnClickListener {
             playAudio()
         }
 
-        stopplayTV.setOnClickListener {
+        binding.btnStopPlay.setOnClickListener {
             pausePlaying()
         }
     }
@@ -57,6 +66,9 @@ class MainActivity : AppCompatActivity() {
 
         // Check permissions
         if (CheckPermissions()) {
+            val drawable = AppCompatResources.getDrawable(applicationContext, R.drawable.btn_rec_start)
+            drawable!!.setColorFilter(Color.CYAN, PorterDuff.Mode.MULTIPLY)
+            binding.btnRecord.setBackgroundDrawable(drawable)
 
             // Save file
             mFileName = File(getExternalFilesDir("")?.absolutePath,"Record.3gp")
@@ -90,7 +102,11 @@ class MainActivity : AppCompatActivity() {
             }
             // Start the audio recording
             mRecorder!!.start()
-            statusTV.text = "Recording in progress"
+            binding.idTVstatus.setTextColor(Color.CYAN)
+            binding.idTVstatus.text = "Recording..."
+            binding.idTVstatusFile.setTextColor(Color.RED)
+            binding.idTVstatusFile.text = "File not loaded."
+
         } else {
             // Request permissions
             RequestPermissions()
@@ -110,6 +126,7 @@ class MainActivity : AppCompatActivity() {
                 val permissionToStore = grantResults[1] == PackageManager.PERMISSION_GRANTED
                 if (permissionToRecord && permissionToStore) {
 
+                    startRecording()
                     // Message
                     Toast.makeText(applicationContext, "Permission Granted", Toast.LENGTH_LONG).show()
 
@@ -141,32 +158,57 @@ class MainActivity : AppCompatActivity() {
 
     fun playAudio() {
 
+
         // Use the MediaPlayer class to listen to recorded audio files
-        mPlayer = MediaPlayer()
-        try {
-            // Preleva la fonte del file audio
-            mPlayer!!.setDataSource(mFileName.toString())
 
-            // Fetch the source of the mPlayer
-            mPlayer!!.prepare()
+        if (mFileName != null) {
+            if (mPlayer == null) {
+                mPlayer = MediaPlayer()
+                try {
+                    // Preleva la fonte del file audio
+                    mPlayer!!.setDataSource(mFileName.toString())
 
-            // Start the mPlayer
-            mPlayer!!.start()
-            statusTV.text = "Listening recording"
-        } catch (e: IOException) {
-            Log.e("TAG", "prepare() failed")
+                    // Fetch the source of the mPlayer
+                    mPlayer!!.prepare()
+
+                    // Start the mPlayer
+                    mPlayer!!.start()
+                } catch (e: IOException) {
+                    Log.e("TAG", "prepare() failed")
+                }
+            } else {
+                mPlayer!!.seekTo(posicioAudio)
+                if (posicioAudio >= mPlayer!!.duration) {
+                    mPlayer!!.seekTo(0)
+                }
+                mPlayer!!.start()
+            }
+            binding.idTVstatusFile.setTextColor(Color.CYAN)
+            binding.idTVstatusFile.text = "Playing..."
+        } else {
+            binding.idTVstatusFile.setTextColor(Color.RED)
+            binding.idTVstatusFile.text = "You dont have any audio to play."
         }
+
+
+
+
     }
 
-    fun pauseRecording() {
+    fun endRecording() {
 
         // Stop recording
-        if (mFileName == null) {
-
+        if (mFileName == null || mRecorder == null) {
             // Message
+            binding.idTVstatus.setTextColor(Color.RED)
+            binding.idTVstatus.text = "Save Failed... Start recording before saving."
             Toast.makeText(getApplicationContext(), "Registration not started", Toast.LENGTH_LONG).show()
 
         } else {
+            val drawable = AppCompatResources.getDrawable(applicationContext, R.drawable.btn_rec_start)
+            drawable!!.setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY)
+            binding.btnRecord.setBackgroundDrawable(drawable)
+
             mRecorder!!.stop()
 
             // Message to confirm save file
@@ -177,14 +219,20 @@ class MainActivity : AppCompatActivity() {
             // Release the class mRecorder
             mRecorder!!.release()
             mRecorder = null
-            statusTV.text = "Recording interrupted"
+            binding.idTVstatus.setTextColor(Color.GREEN)
+            binding.idTVstatus.text = "Successfully recorded... File saved. Ready to play."
+            binding.idTVstatusFile.setTextColor(Color.GREEN)
+            binding.idTVstatusFile.text = "File loaded successfully."
         }
     }
 
     fun pausePlaying() {
-
-        // Stop playing the audio file
-        statusTV.text = "Recording stopped"
+        if (mPlayer != null)  {
+            posicioAudio = mPlayer!!.currentPosition
+            binding.idTVstatusFile.setTextColor(Color.YELLOW)
+            binding.idTVstatusFile.text = "Paused..."
+            mPlayer!!.pause()
+        }
     }
 
     companion object {
